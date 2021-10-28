@@ -1,7 +1,6 @@
-const fs = require('fs');
 require('dotenv').config();
-const { getNotFollowingYou } = require('./src');
+const { telegramInit } = require('./src/telegram');
 
 (async () => {
-    const intagramRes = await getNotFollowingYou();
+    telegramInit();
 })();
