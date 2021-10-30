@@ -1,0 +1,39 @@
+{
+  "name": "instagram-unfollowers-telegram-bot",
+  "version": "1.0.0",
+  "description": "NodeJS Instagram Unfollowers Telegram Bot 🤖📢",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev": "nodemon index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atakanuludag/instagram-unfollowers-telegram-bot.git"
+  },
+  "keywords": [
+    "node",
+    "instagram",
+    "unfollowers",
+    "telegram",
+    "bot"
+  ],
+  "author": "Atakan Yasin ULUDAG",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atakanuludag/instagram-unfollowers-telegram-bot/issues"
+  },
+  "homepage": "https://github.com/atakanuludag/instagram-unfollowers-telegram-bot#readme",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "dotenv": "^10.0.0",
+    "inquirer": "^8.2.0",
+    "instagram-private-api": "^1.45.1",
+    "moment": "^2.29.1",
+    "nodemailer": "^6.7.0",
+    "telegraf": "^4.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
+  }
+}
