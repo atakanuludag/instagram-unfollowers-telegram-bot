@@ -44,7 +44,7 @@ const telegramInit = async function() {
         return ctx.reply(replyText, { parse_mode: 'HTML' }).then(() => next());
     });
 
-    bot.command('ab7', async (ctx) => { //unfollowerslist
+    bot.command('unfollowerslist', async (ctx) => {
         await ctx.reply(`--- <strong>BAŞLANGIÇ</strong> ---`, { parse_mode: 'HTML' });
         await ctx.reply(`<strong>✦✦✦ 📅 ${moment().format('DD MMMM YYYY — HH:mm')} ✦✦✦</strong>`, { parse_mode: 'HTML' });
         await ctx.reply(`Instagram servisinden veriler çekiliyor... 💾🤖`);
