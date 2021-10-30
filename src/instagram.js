@@ -6,8 +6,10 @@ const ig = new IgApiClient();
 
 const igUserName = process.env.IG_USERNAME;
 const igPassword = process.env.IG_PASSWORD;
+let pk = null;
 
 ig.state.generateDevice(igUserName);
+
 
 const login = async function() {
     return Bluebird.try(() => ig.account.login(igUserName, igPassword)).catch(
@@ -45,10 +47,17 @@ const getAllItemsFromFeed = async function(feed) {
     return items;
 }
 
-const getNotFollowingYou = async function() {
+const userUnfollow = async function(unfollowUserPk) {
+    try {
+        await ig.friendship.destroy(unfollowUserPk);
+        return true;
+    }
+    catch(err){
+        return false;
+    }
+}
 
-    const instagramLogin = await login();
-    const pk = instagramLogin.pk;
+const getNotFollowingYou = async function() {
 
     const followersFeed = ig.feed.accountFollowers(pk);
     const followingFeed = ig.feed.accountFollowing(pk);
@@ -60,13 +69,9 @@ const getNotFollowingYou = async function() {
 
     const notFollowingYou = following.filter(({ username }) => !followersUsername.has(username));
 
-    console.log("Followers Count: ", followers.length);
-    console.log("Following Count: ", following.length);
-    console.log("Not Following You Count: ", notFollowingYou.length);
-
-    /*fs.writeFile('notFollowingYou.json', JSON.stringify(notFollowingYou), function (err) {
-        if (err) return console.log(err);
-    });*/
+    console.log('Followers Count: ', followers.length);
+    console.log('Following Count: ', following.length);
+    console.log('Not Following You Count: ', notFollowingYou.length);
 
     return {
         followers,
@@ -75,4 +80,11 @@ const getNotFollowingYou = async function() {
     };
 }
 
+const instagramInit = async function() {
+    const instagramLogin = await login();
+    pk = instagramLogin.pk;
+}
+
+exports.instagramInit = instagramInit;
 exports.getNotFollowingYou = getNotFollowingYou;
+exports.userUnfollow = userUnfollow;
