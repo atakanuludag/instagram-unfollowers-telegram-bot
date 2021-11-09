@@ -1,6 +1,8 @@
-const { IgApiClient, IgLoginTwoFactorRequiredError } = require('instagram-private-api');
-const Bluebird = require('bluebird');
-const Inquirer = require('inquirer');
+import { AccountFollowersFeed, AccountFollowingFeed, AccountFollowersFeedResponseUsersItem, IgApiClient, IgLoginTwoFactorRequiredError } from 'instagram-private-api';
+import Bluebird from 'bluebird';
+import { Telegraf } from 'telegraf';
+import INotFollowingYou from '@interfaces/INotFollowingYou';
+
 
 const ig = new IgApiClient();
 
@@ -10,8 +12,8 @@ let pk = null;
 
 ig.state.generateDevice(igUserName);
 
+const instagramLogin = async (bot: Telegraf): Promise<any> => {
 
-const login = async function() {
     return Bluebird.try(() => ig.account.login(igUserName, igPassword)).catch(
         IgLoginTwoFactorRequiredError,
         async err => {
@@ -20,17 +22,22 @@ const login = async function() {
             const verificationMethod = totp_two_factor_on ? '0' : '1'; // default to 1 for SMS
             // At this point a code should have been sent
             // Get the code
-            const { code } = await Inquirer.prompt([
+            
+            
+
+
+            /*const { code } = await Inquirer.prompt([
                 {
                     type: 'input',
                     name: 'code',
                     message: `Enter code received via ${verificationMethod === '1' ? 'SMS' : 'TOTP'}`,
                 },
-            ]);
+            ]);*/
+
             // Use the code to finish the login process
             return ig.account.twoFactorLogin({
                 username,
-                verificationCode: code,
+                verificationCode: "", //code
                 twoFactorIdentifier: two_factor_identifier,
                 verificationMethod, // '1' = SMS (default), '0' = TOTP (google auth for example)
                 trustThisDevice: '1', // Can be omitted as '1' is used by default
@@ -39,15 +46,15 @@ const login = async function() {
     ).catch(e => console.error('An error occurred while processing two factor auth', e, e.stack));
 }
 
-const getAllItemsFromFeed = async function(feed) {
-    let items = [];
+const getAllItemsFromFeed = async (feed: AccountFollowersFeed | AccountFollowingFeed): Promise<AccountFollowersFeedResponseUsersItem[]> => {
+    let items = new Array<AccountFollowersFeedResponseUsersItem>();
     do {
         items = items.concat(await feed.items());
     } while (feed.isMoreAvailable());
     return items;
 }
 
-const userUnfollow = async function(unfollowUserPk) {
+const userUnfollow = async (unfollowUserPk): Promise<boolean> => {
     try {
         await ig.friendship.destroy(unfollowUserPk);
         return true;
@@ -57,7 +64,7 @@ const userUnfollow = async function(unfollowUserPk) {
     }
 }
 
-const getNotFollowingYou = async function() {
+const getNotFollowingYou = async (): Promise<INotFollowingYou> => {
 
     const followersFeed = ig.feed.accountFollowers(pk);
     const followingFeed = ig.feed.accountFollowing(pk);
@@ -80,11 +87,10 @@ const getNotFollowingYou = async function() {
     };
 }
 
-const instagramInit = async function() {
-    const instagramLogin = await login();
-    pk = instagramLogin.pk;
+const instagramModule = {
+    instagramLogin,
+    getNotFollowingYou,
+    userUnfollow
 }
 
-exports.instagramInit = instagramInit;
-exports.getNotFollowingYou = getNotFollowingYou;
-exports.userUnfollow = userUnfollow;
+export default instagramModule;
