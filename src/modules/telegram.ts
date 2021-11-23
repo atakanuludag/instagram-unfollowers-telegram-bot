@@ -9,10 +9,8 @@ import INotFollowingYou from '@interfaces/INotFollowingYou'
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 const telegramPostWaitTime = parseInt(process.env.TELEGRAM_POST_WAIT_TIME);
 
-const telegramInit = async (): Promise<Telegraf> => {
-    const bot = new Telegraf(telegramBotToken);
-    return bot;
-}
+
+const telegramInit = async (): Promise<Telegraf> => new Telegraf(telegramBotToken);
 
 const telegramBotLaunch = async (bot: Telegraf): Promise<void> => {
 
@@ -21,14 +19,6 @@ const telegramBotLaunch = async (bot: Telegraf): Promise<void> => {
         following: [],
         notFollowingYou: []
     };
-
-    bot.start((ctx) => {
-        ctx.reply(`Merhaba 😋`);
-    });
-
-    bot.command('chatid', async (ctx) => {
-        ctx.reply(`<strong>Chat ID:</strong> <i>${ctx.chat.id}</i> 👍`, { parse_mode: 'HTML' });
-    });
 
     bot.action(/handleUnfollowButton_+/, async (ctx, next) => {
         let replyText = 'Takipten çıkarma işlemi başarılı ✔️👍';
@@ -79,11 +69,36 @@ const telegramBotLaunch = async (bot: Telegraf): Promise<void> => {
         ctx.reply(`Bot işlemleri tamamlandı 👌`);
         await ctx.reply(`--- <strong>BİTİŞ</strong> ---`, { parse_mode: 'HTML' });
     })
+
+    //Instagram 2FA
+    bot.on('text', (ctx) => {
+        
+    });
+}
+
+const instagramTwoFactorVerification = async (bot: Telegraf, chatId: number | null, text: string): Promise<any> => {
+    let textt = "";
+
+    console.log("buraya girdi");
+    await bot.on("text", async (ctx) => {
+        textt = ctx.message.text;
+        //ctx.replyWithInvoice
+        console.log("11", ctx.message.text);
+    });
+
+    /*return new Promise( async (resolve, reject) => {
+        await bot.telegram.sendMessage(chatId, text);
+        bot.on("text", async (ctx) => {
+            console.log(ctx.message.text);
+            resolve(ctx.message.text)
+        });
+    });*/
 }
 
 const telegramModule = {
     telegramInit,
-    telegramBotLaunch
+    telegramBotLaunch,
+    instagramTwoFactorVerification
 }
 
 export default telegramModule;

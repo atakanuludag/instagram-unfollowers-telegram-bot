@@ -1,8 +1,13 @@
-import { AccountFollowersFeed, AccountFollowingFeed, AccountFollowersFeedResponseUsersItem, IgApiClient, IgLoginTwoFactorRequiredError } from 'instagram-private-api';
+import { 
+    AccountFollowersFeed, 
+    AccountFollowingFeed, 
+    AccountFollowersFeedResponseUsersItem, 
+    IgApiClient, 
+    IgLoginTwoFactorRequiredError } from 'instagram-private-api';
 import Bluebird from 'bluebird';
 import { Telegraf } from 'telegraf';
+import telegramModule from '@modules/telegram';
 import INotFollowingYou from '@interfaces/INotFollowingYou';
-
 
 const ig = new IgApiClient();
 
@@ -12,7 +17,7 @@ let pk = null;
 
 ig.state.generateDevice(igUserName);
 
-const instagramLogin = async (bot: Telegraf): Promise<any> => {
+const instagramLogin = async (bot: Telegraf, chatId: number | null): Promise<any> => {
 
     return Bluebird.try(() => ig.account.login(igUserName, igPassword)).catch(
         IgLoginTwoFactorRequiredError,
@@ -23,9 +28,16 @@ const instagramLogin = async (bot: Telegraf): Promise<any> => {
             // At this point a code should have been sent
             // Get the code
             
+            const message = `Enter code received via ${verificationMethod === '1' ? 'SMS' : 'TOTP'}`;
+            await bot.telegram.sendMessage(chatId, message);
+
+            bot.on('text', (ctx) => {
+                console.log(ctx.message.text);
+            });
             
 
-
+            const code = await telegramModule.instagramTwoFactorVerification(bot, chatId, message);
+            console.log("code", code);
             /*const { code } = await Inquirer.prompt([
                 {
                     type: 'input',
@@ -43,7 +55,10 @@ const instagramLogin = async (bot: Telegraf): Promise<any> => {
                 trustThisDevice: '1', // Can be omitted as '1' is used by default
             });
         },
-    ).catch(e => console.error('An error occurred while processing two factor auth', e, e.stack));
+    ).catch(e => {
+        console.error('An error occurred while processing two factor auth', e, e.stack);
+        instagramLogin(bot, chatId);
+    });
 }
 
 const getAllItemsFromFeed = async (feed: AccountFollowersFeed | AccountFollowingFeed): Promise<AccountFollowersFeedResponseUsersItem[]> => {
